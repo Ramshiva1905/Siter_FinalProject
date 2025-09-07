@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { AuthProvider } from './contexts/AuthContext';
@@ -17,11 +17,6 @@ import Profile from './pages/Profile';
 import TwoFactorAuth from './pages/TwoFactorAuth';
 import EmailVerification from './pages/EmailVerification';
 import ClaimShipment from './pages/ClaimShipment';
-import CountriesTest from './pages/CountriesTest';
-import CountriesDropdownTest from './pages/CountriesDropdownTest';
-
-// Import debug utility (available in console as window.debugToken())
-import './utils/debugToken.js';
 
 const theme = createTheme({
   palette: {
@@ -96,22 +91,6 @@ function App() {
                   element={
                     <ProtectedRoute requireAdmin={true}>
                       <AdminDashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="test/countries"
-                  element={
-                    <ProtectedRoute>
-                      <CountriesTest />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="test/countries-dropdown"
-                  element={
-                    <ProtectedRoute>
-                      <CountriesDropdownTest />
                     </ProtectedRoute>
                   }
                 />
