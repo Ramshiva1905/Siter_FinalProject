@@ -1,292 +1,244 @@
-# Boxinator - Mystery Box Shipping Calculator
+# 📦 Boxinator - Shipping Management System
 
-A full-stack web application for calculating shipping costs and managing mystery box shipments worldwide.
+A modern full-stack shipping management application built with React, Node.js, and PostgreSQL. Boxinator provides comprehensive shipment tracking, user management, and administrative tools for shipping companies.
 
-## Team Members
+## 🚀 Features
 
-- **Development Team**: SITER Academy Autumn 2025 Cohort
-- **Project Lead**: [Team Lead Name]
-- **Backend Developer**: [Backend Dev Name]
-- **Frontend Developer**: [Frontend Dev Name]
-- **Database Designer**: [DB Designer Name]
+### For Users
+- **Account Management**: Registration, login, 2FA support
+- **Shipment Creation**: Create shipments as guest or registered user
+- **Shipment Tracking**: Track shipment status and history
+- **Profile Management**: Update personal information and preferences
 
-## Project Overview
+### For Administrators
+- **Dashboard**: Comprehensive admin dashboard with analytics
+- **Shipment Management**: Update shipment status, add notes
+- **User Management**: View and manage user accounts
+- **Country Management**: Manage shipping destinations and pricing
 
-Boxinator is a comprehensive shipping management system that allows users to:
-- Calculate shipping costs for mystery boxes to various international destinations
-- Track shipment status throughout the delivery process
-- Manage user accounts with role-based access control
-- Administrative portal for managing countries and shipment statuses
+### Technical Features
+- **Multi-tier Database**: Prisma + Supabase PostgreSQL with REST API fallback
+- **Authentication**: JWT tokens with refresh support
+- **Email Integration**: Welcome emails and notifications
+- **Responsive Design**: Material-UI components optimized for all devices
+- **Real-time Updates**: Live shipment status tracking
 
-## Technology Stack
+## 🏗️ Architecture
 
-### Backend
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **Database**: Supabase (PostgreSQL) with Prisma ORM
-- **Authentication**: JWT with 2FA support
-- **Email**: Nodemailer for email notifications
-- **Testing**: Jest for unit testing
+```
+📁 Boxinator/
+├── 📁 client/          # React.js Frontend
+│   ├── 📁 src/
+│   │   ├── 📁 components/   # Reusable UI components
+│   │   ├── 📁 contexts/     # React Context providers
+│   │   ├── 📁 pages/        # Application pages
+│   │   ├── 📁 services/     # API service layer
+│   │   └── 📁 utils/        # Utility functions
+│   └── 📁 public/      # Static assets
+├── 📁 server/          # Node.js Backend
+│   ├── 📁 src/
+│   │   ├── 📁 routes/       # API endpoints
+│   │   ├── 📁 middleware/   # Express middleware
+│   │   ├── 📁 utils/        # Backend utilities
+│   │   └── 📁 __tests__/    # Test files
+│   └── 📁 prisma/      # Database schema and migrations
+└── 📁 docs/           # Documentation
+```
+
+## 🛠️ Tech Stack
 
 ### Frontend
-- **Framework**: React.js
-- **UI Library**: Material-UI (MUI)
-- **Routing**: React Router DOM
-- **HTTP Client**: Axios
-- **State Management**: React Context API
+- **React.js** - UI framework
+- **Material-UI** - Component library
+- **React Router DOM** - Client-side routing
+- **Axios** - HTTP client
+- **React Context API** - State management
 
-## Features
+### Backend
+- **Node.js** - Runtime environment
+- **Express.js** - Web framework
+- **Prisma ORM** - Database toolkit
+- **JWT** - Authentication
+- **Nodemailer** - Email service
+- **Winston** - Logging
+- **Jest** - Testing framework
 
-### User Features
-- **Registration & Authentication**: Email verification, 2FA support
-- **Guest Shipments**: Send shipments without full registration
-- **Shipment Creation**: Multiple weight tiers with dynamic pricing
-- **Real-time Tracking**: Track shipment status with history
-- **Account Management**: Update profile information
-- **Responsive Design**: Mobile and desktop compatible
+### Database & Infrastructure
+- **Supabase PostgreSQL** - Primary database
+- **Prisma migrations** - Database versioning
+- **Three-tier fallback system** - Prisma → Supabase REST → Mock DB
 
-### Admin Features
-- **Shipment Management**: Update shipment statuses
-- **Country Configuration**: Manage shipping multipliers
-- **User Management**: View and manage user accounts
-- **Statistics Dashboard**: View shipping analytics
-
-### Shipping Tiers
-- **Basic**: 1kg box
-- **Humble**: 2kg box
-- **Deluxe**: 5kg box
-- **Premium**: 8kg box
-
-### Pricing Structure
-- **Nordic Countries** (Norway, Sweden, Denmark): 200 Kr flat rate
-- **International**: 200 Kr + (weight × country multiplier)
-
-## Installation Instructions
+## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js (v16 or higher)
-- PostgreSQL (v13 or higher)
-- npm or yarn package manager
+- Node.js 16+ and npm
+- Supabase account (for database)
+- Gmail account with App Password (for emails)
 
-### 1. Clone the Repository
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/boxinator.git
+   cd boxinator
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cd server
+   cp .env.example .env
+   ```
+   
+   Update `.env` with your credentials:
+   ```env
+   DATABASE_URL="postgresql://user:password@host:port/database"
+   DIRECT_URL="postgresql://user:password@host:port/database"
+   SUPABASE_URL="your-supabase-url"
+   SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+   JWT_SECRET="your-jwt-secret"
+   GMAIL_USER="your-email@gmail.com"
+   GMAIL_APP_PASSWORD="your-app-password"
+   ```
+
+4. **Run database migrations**
+   ```bash
+   cd server
+   npm run migrate
+   npm run db:seed
+   ```
+
+5. **Start development servers**
+   ```bash
+   cd ..
+   npm run dev
+   ```
+
+   This starts:
+   - Frontend: http://localhost:3000
+   - Backend: http://localhost:3001
+
+## 📊 Database Schema
+
+### Core Models
+- **Users**: Account management with roles (Guest, Registered User, Administrator)
+- **Countries**: Shipping destinations with pricing multipliers
+- **Shipments**: Package tracking with status history
+- **StatusHistory**: Audit trail of shipment status changes
+
+### Key Features
+- CUID-based primary keys for distributed systems
+- Enum types for status and account types
+- Comprehensive foreign key relationships
+- Automated timestamps
+
+## 🔐 Authentication & Security
+
+- **JWT Authentication**: Secure token-based auth with configurable expiration
+- **Two-Factor Authentication**: TOTP support using Google Authenticator
+- **Role-based Access Control**: Guest, User, and Admin permissions
+- **Rate Limiting**: Protection against brute force attacks
+- **Password Hashing**: bcrypt with salt rounds
+- **CORS Protection**: Configured for development and production
+
+## 🧪 Testing
+
 ```bash
-git clone [repository-url]
-cd Boxinator2
-```
-
-### 2. Install Dependencies
-```bash
-# Install root dependencies
-npm install
-
-# Install server dependencies
-cd server
-npm install
-
-# Install client dependencies
-cd ../client
-npm install
-```
-
-### 3. Supabase Database Setup
-
-**Option A: Quick Setup with Supabase**
-1. Follow the detailed [Supabase Setup Guide](./SUPABASE_SETUP.md)
-2. Get your Supabase project URL and API keys
-3. Configure your environment variables
-
-**Option B: Local PostgreSQL (Alternative)**
-```bash
-# Create PostgreSQL database locally
-createdb boxinator_db
-```
-
-### 4. Configure Environment Variables
-```bash
-# Copy environment file
-cd server
-cp .env.example .env
-```
-
-Edit `server/.env` with your Supabase configuration:
-```env
-NODE_ENV=development
-PORT=3001
-
-# Supabase Configuration (Recommended)
-DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres"
-SUPABASE_URL="https://[YOUR-PROJECT-REF].supabase.co"
-SUPABASE_ANON_KEY="[YOUR-ANON-KEY]"
-SUPABASE_SERVICE_ROLE_KEY="[YOUR-SERVICE-ROLE-KEY]"
-
-# Other Configuration
-JWT_SECRET=your-super-secret-jwt-key
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASS=your-app-password
-FROM_EMAIL=noreply@boxinator.com
-FRONTEND_URL=http://localhost:3000
-```
-
-### 5. Database Migration and Seeding
-```bash
-# Generate Prisma client
-npx prisma generate
-
-# Run database migrations
-npx prisma migrate dev --name init
-
-# Seed the database with initial data
-npm run db:seed
-```
-
-### 6. Start the Application
-```bash
-# From the root directory, start both server and client
-npm run dev
-```
-
-The application will be available at:
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:3001
-
-## Test Accounts
-
-After seeding the database, you can use these test accounts:
-
-### Administrator Account
-- **Email**: admin@boxinator.com
-- **Password**: admin123456
-
-### Regular User Account
-- **Email**: user@boxinator.com
-- **Password**: user123456
-
-### Guest Account
-- **Email**: guest@example.com
-- **Note**: Guest accounts don't require passwords for creating shipments
-
-## API Documentation
-
-### Authentication Endpoints
-- `POST /api/auth/login` - User login
-- `POST /api/auth/register` - User registration
-- `GET /api/auth/verify-email/:token` - Email verification
-- `POST /api/auth/setup-2fa` - Setup two-factor authentication
-- `POST /api/auth/verify-2fa` - Verify 2FA token
-
-### Shipment Endpoints
-- `GET /api/shipments` - Get user shipments
-- `POST /api/shipments` - Create new shipment
-- `GET /api/shipments/:id` - Get shipment details
-- `PUT /api/shipments/:id` - Update shipment status
-- `DELETE /api/shipments/:id` - Delete shipment (admin only)
-
-### Account Endpoints
-- `GET /api/account/me/profile` - Get current user profile
-- `PUT /api/account/:id` - Update account information
-- `POST /api/account` - Create account (admin only)
-
-### Settings Endpoints
-- `GET /api/settings/countries` - Get all countries
-- `POST /api/settings/countries` - Add new country (admin only)
-- `PUT /api/settings/countries/:id` - Update country (admin only)
-- `GET /api/settings/statistics` - Get shipping statistics (admin only)
-
-## Testing
-
-### Backend Tests
-```bash
+# Run backend tests
 cd server
 npm test
-```
 
-### Frontend Tests
-```bash
+# Run frontend tests
 cd client
 npm test
 ```
 
-### Run All Tests
-```bash
-# From root directory
-npm test
-```
+## 📝 API Endpoints
 
-## Security Features
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/verify-email/:token` - Email verification
 
-- **JWT Authentication**: Secure token-based authentication
-- **2FA Support**: Optional two-factor authentication using TOTP
-- **Rate Limiting**: Protection against brute force attacks
-- **Input Validation**: Server-side validation for all inputs
-- **HTTPS**: Enforced in production environment
-- **Environment Variables**: Secure credential storage
+### Shipments
+- `GET /api/shipments` - List shipments
+- `POST /api/shipments` - Create shipment
+- `PUT /api/shipments/:id` - Update shipment
+- `GET /api/shipments/:id` - Get shipment details
 
-## Development Guidelines
+### Countries
+- `GET /api/countries` - List active countries
+- `PUT /api/countries/:id` - Update country (admin only)
 
-### Code Structure
-- **Backend**: RESTful API following MVC pattern
-- **Frontend**: Component-based React architecture
-- **Database**: Normalized relational schema with Prisma ORM
+## 🚀 Deployment
 
-### Coding Standards
-- **JavaScript**: ES6+ features with modern syntax
-- **Error Handling**: Comprehensive error handling with proper HTTP status codes
-- **Logging**: Structured logging with Winston
-- **Validation**: Client and server-side validation
+### Environment Setup
+1. Set production environment variables
+2. Build the React application: `cd client && npm run build`
+3. Set up database migrations on production
+4. Configure reverse proxy (nginx recommended)
 
-## Deployment
+### Database Deployment
+The application uses a three-tier database system:
+1. **Primary**: Prisma + Supabase PostgreSQL
+2. **Fallback**: Direct Supabase REST API
+3. **Development**: Mock database for testing
 
-### Production Environment
-1. Set `NODE_ENV=production`
-2. Configure production database
-3. Set up HTTPS certificates
-4. Configure email service
-5. Set secure JWT secrets
-6. Build frontend for production:
-   ```bash
-   cd client
-   npm run build
-   ```
-
-### Environment Variables for Production
-```env
-NODE_ENV=production
-DATABASE_URL=your-production-database-url
-JWT_SECRET=secure-production-secret
-SMTP_HOST=your-smtp-server
-FRONTEND_URL=https://your-domain.com
-```
-
-## Troubleshooting
+## 🐛 Troubleshooting
 
 ### Common Issues
+1. **Database Connection**: Check Supabase credentials and network connectivity
+2. **Email Errors**: Verify Gmail App Password configuration
+3. **Port Conflicts**: Ensure ports 3000 and 3001 are available
+4. **CUID Generation**: ID generation handled automatically by the system
 
-1. **Database Connection Error**
-   - Verify PostgreSQL is running
-   - Check DATABASE_URL in .env file
+### Debug Commands
+```bash
+# Check database connection
+cd server && node test-supabase-connection.js
 
-2. **Email Not Sending**
-   - Verify SMTP configuration
-   - Check email service credentials
+# Verify authentication
+cd server && node test-auth-flow.js
 
-3. **Frontend Not Loading**
-   - Ensure client dependencies are installed
-   - Check if backend server is running
+# Reset database
+cd server && npm run db:reset
+```
 
-## Contributing
+## 📈 Performance Features
+
+- **Lazy Loading**: React components loaded on demand
+- **Database Indexing**: Optimized queries with proper indexes
+- **Connection Pooling**: Efficient database connection management
+- **Response Caching**: Cached API responses for frequently accessed data
+- **Error Boundaries**: Graceful error handling in React
+
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit changes: `git commit -m 'Add amazing feature'`
+4. Push to branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
 
-## Support
+## 📄 License
 
-For support and questions, please contact the development team or create an issue in the repository.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## License
+## 🙏 Acknowledgments
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+- Material-UI for the component library
+- Supabase for the database infrastructure
+- Prisma for the excellent ORM
+- React team for the amazing frontend framework
+
+## 📞 Support
+
+For support, email support@boxinator.com or create an issue in this repository.
+
+---
+
+**Built with ❤️ by the Boxinator Team**
