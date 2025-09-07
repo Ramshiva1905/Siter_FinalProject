@@ -15,12 +15,10 @@ import {
   Box,
   Alert,
   Paper,
-  Chip,
   Stepper,
   Step,
   StepLabel,
   Avatar,
-  Divider,
   Stack,
   LinearProgress
 } from '@mui/material';
@@ -30,8 +28,7 @@ import {
   Scale,
   Public,
   Palette,
-  Receipt,
-  Send
+  Receipt
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useSnackbar } from '../contexts/SnackbarContext';
@@ -235,8 +232,17 @@ const CreateShipment = () => {
       
       const data = await response.json();
       console.log('Shipment created:', data);
-      showSuccess('Shipment created successfully!');
-      navigate('/dashboard');
+      
+      // Navigate based on user type with appropriate messages
+      if (user) {
+        showSuccess('Shipment created successfully! Redirecting to your dashboard...');
+        // Logged-in users go to dashboard
+        navigate('/dashboard');
+      } else {
+        showSuccess('Shipment created successfully! You can track your shipment using the tracking ID provided in your email.');
+        // Guests go back to homepage
+        navigate('/');
+      }
     } catch (err) {
       console.error('Failed to create shipment:', err);
       const errorMessage = err.response?.data?.error || err.message || 'Failed to create shipment';
