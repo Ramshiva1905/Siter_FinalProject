@@ -35,7 +35,6 @@ import {
   Star,
   ArrowForward,
   Phone,
-  LocationOn,
   AccessTime
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
@@ -100,6 +99,20 @@ const Homepage = () => {
       cta: 'Register',
       ctaAction: () => navigate('/register'),
       description: 'Full access to all features with personal account'
+    },
+    {
+      type: 'Existing Users',
+      icon: <Person sx={{ fontSize: 48, color: 'success.main' }} />,
+      color: 'success',
+      features: [
+        'Access your dashboard',
+        'View shipment history',
+        'Manage account settings',
+        'Track all shipments'
+      ],
+      cta: 'Sign In',
+      ctaAction: () => navigate('/login'),
+      description: 'Welcome back! Log in to access your account'
     },
     {
       type: 'Administrators',
@@ -329,7 +342,7 @@ const Homepage = () => {
         
         <Grid container spacing={4}>
           {userTypes.map((userType, index) => (
-            <Grid item xs={12} md={4} key={index}>
+            <Grid item xs={12} sm={6} md={6} lg={3} key={index}>
               <Card
                 sx={{
                   height: '100%',
@@ -384,7 +397,7 @@ const Homepage = () => {
         </Grid>
       </Container>
 
-      {/* Testimonials Section */}
+      {/* User Types Section */}
       <Box sx={{ bgcolor: alpha(theme.palette.grey[100], 0.5), py: 8 }}>
         <Container maxWidth="lg">
           <Typography variant="h3" component="h2" textAlign="center" fontWeight="bold" gutterBottom>

@@ -315,4 +315,51 @@ router.post('/disable-2fa', authenticateToken, async (req, res, next) => {
   }
 });
 
+// Change password endpoint
+const changePasswordValidation = [
+  body('currentPassword').isLength({ min: 1 }).withMessage('Current password is required'),
+  body('newPassword').isLength({ min: 8 }).withMessage('New password must be at least 8 characters')
+];
+
+router.post('/change-password', authenticateToken, changePasswordValidation, async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: 'Validation failed', details: errors.array() });
+    }
+
+    const { currentPassword, newPassword } = req.body;
+
+    // Get the user with password
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id }
+    });
+
+    if (!user || !user.password) {
+      return res.status(404).json({ error: 'User not found or no password set' });
+    }
+
+    // Verify current password
+    const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+    if (!isValidPassword) {
+      return res.status(400).json({ error: 'Current password is incorrect' });
+    }
+
+    // Hash new password
+    const newPasswordHash = await bcrypt.hash(newPassword, 12);
+
+    // Update password
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: { password: newPasswordHash }
+    });
+
+    logger.info(`Password changed for user: ${req.user.email}`);
+
+    res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;

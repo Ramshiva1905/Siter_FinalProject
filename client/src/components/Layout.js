@@ -57,7 +57,8 @@ const Layout = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    // Force navigation to homepage and reload to avoid ProtectedRoute redirects
+    window.location.href = '/';
     handleProfileMenuClose();
   };
 
