@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum AccountType {
+  GUEST
+  REGISTERED_USER
+  ADMINISTRATOR
+}
+
+enum ShipmentStatus {
+  CREATED
+  RECEIVED
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+model User {
+  id                String      @id @default(cuid())
+  email             String      @unique
+  password          String?
+  firstName         String?
+  lastName          String?
+  dateOfBirth       DateTime?
+  accountType       AccountType @default(GUEST)
+  isEmailVerified   Boolean     @default(false)
+  emailVerifyToken  String?
+  emailVerifyExpires DateTime?
+  twoFactorSecret   String?
+  twoFactorEnabled  Boolean     @default(false)
+  resetPasswordToken String?
+  resetPasswordExpires DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  
+  shipments         Shipment[]
+  
+  @@map("users")
+}
+
+model Country {
+  id           String    @id @default(cuid())
+  name         String    @unique
+  multiplier   Float     @default(1.0)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  shipments    Shipment[]
+  
+  @@map("countries")
+}
+
+model Shipment {
+  id                String          @id @default(cuid())
+  userId            String
+  recipientName     String
+  recipientEmail    String
+  recipientPhone    String?
+  recipientAddress  String
+  boxColor          String
+  weight            Float
+  length            Float
+  width             Float
+  height            Float
+  destinationCountryId String
+  status            ShipmentStatus  @default(CREATED)
+  notes             String?
+  totalCost         Float
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  
+  user              User            @relation(fields: [userId], references: [id])
+  destinationCountry Country        @relation(fields: [destinationCountryId], references: [id])
+  statusHistory     StatusHistory[]
+  
+  @@map("shipments")
+}
+
+model StatusHistory {
+  id          String          @id @default(cuid())
+  shipmentId  String
+  status      ShipmentStatus
+  notes       String?
+  createdAt   DateTime        @default(now())
+  createdBy   String?
+  
+  shipment    Shipment        @relation(fields: [shipmentId], references: [id])
+  
+  @@map("status_history")
+}
