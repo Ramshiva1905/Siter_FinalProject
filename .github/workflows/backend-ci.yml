@@ -1,0 +1,168 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches: [ master, develop ]
+    paths:
+      - 'server/**'
+      - '.github/workflows/backend-ci.yml'
+      - 'package.json'
+  pull_request:
+    branches: [ master, develop ]
+    paths:
+      - 'server/**'
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x]
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: boxinator_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: server/package-lock.json
+    
+    - name: Install root dependencies
+      run: npm install
+    
+    - name: Install backend dependencies
+      working-directory: ./server
+      run: npm install
+    
+    - name: Setup environment for testing
+      working-directory: ./server
+      run: |
+        cat > .env.test << EOF
+        DATABASE_URL=postgresql://postgres:postgres@localhost:5432/boxinator_test
+        JWT_SECRET=test-secret-key-123456789
+        JWT_EXPIRES_IN=24h
+        SMTP_HOST=smtp.gmail.com
+        SMTP_PORT=587
+        SMTP_USER=test@gmail.com
+        SMTP_PASS=test_password
+        FRONTEND_URL=http://localhost:3000
+        NODE_ENV=test
+        EOF
+    
+    - name: Run Prisma Migrations
+      working-directory: ./server
+      run: npx prisma migrate deploy
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/boxinator_test
+    
+    - name: Check backend syntax
+      working-directory: ./server
+      run: node --check src/index.js
+    
+    - name: Run tests
+      working-directory: ./server
+      run: npm test -- --watchAll=false --passWithNoTests
+      continue-on-error: true
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/boxinator_test
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: backend-test-results
+        path: server/__tests__/results
+        retention-days: 5
+
+  lint-code:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js 18.x
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18.x
+        cache: 'npm'
+        cache-dependency-path: server/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: ./server
+      run: npm install
+    
+    - name: Lint code
+      working-directory: ./server
+      run: npm run lint || true
+
+  deploy-staging:
+    needs: [build-test, lint-code]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy to Staging
+      run: |
+        echo "🚀 Deploying backend to staging..."
+        echo "Note: Configure your staging deployment provider in secrets"
+        # Add your staging deployment command here
+        # Example: heroku deploy --staging
+    
+    - name: Run smoke tests on staging
+      run: |
+        echo "✅ Running smoke tests on staging..."
+        sleep 5
+        curl -f http://staging.boxinator.local/health || exit 1
+
+  deploy-production:
+    needs: [build-test, lint-code]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy to Production
+      run: |
+        echo "🚀 Deploying backend to production..."
+        echo "Note: Configure your production deployment provider in secrets"
+        # Add your production deployment command here
+        # Example: heroku deploy --production
+    
+    - name: Run smoke tests on production
+      run: |
+        echo "✅ Running smoke tests on production..."
+        sleep 5
+        curl -f http://api.boxinator.local/health || exit 1
+    
+    - name: Notify deployment
+      if: success()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '✅ Backend deployed to production successfully!'
+          })

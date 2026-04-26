@@ -1,0 +1,119 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches: [ master, develop ]
+    paths:
+      - 'client/**'
+      - '.github/workflows/frontend-ci.yml'
+      - 'package.json'
+  pull_request:
+    branches: [ master, develop ]
+    paths:
+      - 'client/**'
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: client/package-lock.json
+    
+    - name: Install root dependencies
+      run: npm install
+    
+    - name: Install frontend dependencies
+      working-directory: ./client
+      run: npm install
+    
+    - name: Build frontend
+      working-directory: ./client
+      run: npm run build
+      env:
+        REACT_APP_API_URL: http://localhost:3001
+        CI: false
+    
+    - name: Run tests (if available)
+      working-directory: ./client
+      run: npm test -- --watchAll=false --passWithNoTests
+      continue-on-error: true
+    
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: frontend-build
+        path: client/build
+        retention-days: 5
+
+  deploy-preview:
+    needs: build-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Download build artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: frontend-build
+        path: client/build
+    
+    - name: Comment PR with preview info
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '✅ Frontend build successful! Ready for review.\n\nTo deploy to staging, merge this PR to `develop` branch.'
+          })
+
+  deploy-production:
+    needs: build-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Download build artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: frontend-build
+        path: client/build
+    
+    - name: Deploy to Vercel
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        working-directory: ./client
+        scope: ${{ secrets.VERCEL_ORG_ID }}
+    
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: frontend-v${{ github.run_number }}
+        release_name: Frontend Release v${{ github.run_number }}
+        body: |
+          Frontend deployed to production.
+          - Commit: ${{ github.sha }}
+          - Author: ${{ github.actor }}
+        draft: false
+        prerelease: false

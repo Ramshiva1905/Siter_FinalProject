@@ -362,4 +362,77 @@ router.post('/change-password', authenticateToken, changePasswordValidation, asy
   }
 });
 
+// Resend verification email
+router.post('/resend-verification', [body('email').isEmail().normalizeEmail()], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: 'Invalid email address' });
+    }
+
+    const { email } = req.body;
+
+    const db = await getDatabase();
+    const connectionType = getConnectionType();
+
+    let user;
+    if (connectionType === 'prisma') {
+      user = await db.user.findFirst({
+        where: { email }
+      });
+    } else {
+      const users = await db.getUsers();
+      user = users.find(u => u.email === email);
+    }
+
+    if (!user) {
+      // Don't reveal if email exists for security reasons
+      return res.json({ message: 'If this email is registered, a verification link has been sent' });
+    }
+
+    if (user.isEmailVerified) {
+      return res.json({ message: 'This email is already verified' });
+    }
+
+    // Generate new verification token
+    const verificationToken = jwt.sign(
+      { email: user.email, userId: user.id },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    // Update user with new token
+    if (connectionType === 'prisma') {
+      await db.user.update({
+        where: { id: user.id },
+        data: { emailVerificationToken: verificationToken }
+      });
+    } else if (connectionType === 'rest') {
+      // For Supabase REST API
+      const { error } = await db.supabase
+        .from('User')
+        .update({ emailVerificationToken: verificationToken })
+        .eq('id', user.id);
+      if (error) throw error;
+    } else {
+      // For mock database
+      const users = await db.getUsers();
+      const userIndex = users.findIndex(u => u.id === user.id);
+      if (userIndex !== -1) {
+        users[userIndex].emailVerificationToken = verificationToken;
+      }
+    }
+
+    // Send verification email
+    await sendVerificationEmail(email, verificationToken);
+
+    logger.info(`Verification email resent to: ${email}`);
+
+    res.json({ message: 'Verification email sent successfully' });
+  } catch (error) {
+    logger.error('Error resending verification email:', error);
+    next(error);
+  }
+});
+
 module.exports = router;
